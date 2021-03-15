@@ -30,9 +30,9 @@ public struct PluginDirectoryEntry {
         return extractHTMLText(self.changelogHTML)
     }
 
-    let rating: Int
+    let rating: Double
     public var starRating: Double {
-        return (Double(rating) / 10).rounded() / 2
+        return (rating / 10).rounded() / 2
         // rounded to nearest half.
     }
 }
@@ -81,7 +81,7 @@ extension PluginDirectoryEntry: Codable {
         slug = try container.decode(String.self, forKey: .slug)
         version = try? container.decode(String.self, forKey: .version)
         lastUpdated = try? container.decode(Date.self, forKey: .lastUpdated)
-        rating = try container.decode(Int.self, forKey: .rating)
+        rating = try container.decode(Double.self, forKey: .rating)
 
         let icons = try? container.decodeIfPresent([String: String].self, forKey: .icons)
         icon = icons?["2x"].flatMap({ (s) -> URL? in
@@ -158,7 +158,7 @@ extension PluginDirectoryEntry: Codable {
         guard let name = responseObject["name"] as? String,
             let slug = responseObject["slug"] as? String,
             let authorString = responseObject["author"] as? String,
-            let rating = responseObject["rating"] as? Int else {
+            let rating = responseObject["rating"] as? Double else {
                 throw PluginServiceRemote.ResponseError.decodingFailure
         }
 
@@ -184,7 +184,6 @@ extension PluginDirectoryEntry: Codable {
     }
 }
 
-        
 // Since the WPOrg API returns `author` as a HTML string (or freeform text), we need to get ugly and parse out the important bits out of it ourselves.
 // Using the built-in NSAttributedString API for it is too slow — it's required to run on main thread and it calls out to WebKit APIs,
 // making the context switches excessively expensive when trying to display a list of plugins.
@@ -227,7 +226,7 @@ internal func extractAuthor(_ author: String) -> Author {
 internal func extractHTMLText(_ text: String?) -> NSAttributedString? {
     guard Thread.isMainThread,
         let data = text?.data(using: .utf16),
-        let attributedString = try? NSAttributedString(data: data, options: [.documentType : NSAttributedString.DocumentType.html], documentAttributes: nil) else {
+        let attributedString = try? NSAttributedString(data: data, options: [.documentType: NSAttributedString.DocumentType.html], documentAttributes: nil) else {
             return nil
     }
 
@@ -281,7 +280,7 @@ private final class AuthorParser: NSObject, XMLParserDelegate {
     var author = ""
     var url: URL?
 
-    func parser(_ parser: XMLParser, didStartElement elementName: String, namespaceURI: String?, qualifiedName qName: String?, attributes attributeDict: [String : String] = [:]) {
+    func parser(_ parser: XMLParser, didStartElement elementName: String, namespaceURI: String?, qualifiedName qName: String?, attributes attributeDict: [String: String] = [:]) {
         guard elementName == "a",
             let href = attributeDict["href"] else {
                 return

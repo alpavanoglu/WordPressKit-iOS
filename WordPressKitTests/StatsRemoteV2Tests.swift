@@ -44,6 +44,12 @@ class StatsRemoteV2Tests: RemoteTestCase, RESTTestable {
 
     override func setUp() {
         super.setUp()
+
+        // standardize timezone to GMT+0
+        if let timezone = TimeZone(abbreviation: "GMT") {
+            NSTimeZone.default = timezone
+        }
+
         remote = StatsServiceRemoteV2(wordPressComRestApi: getRestApi(), siteID: siteID, siteTimezone: .autoupdatingCurrent)
     }
 
@@ -110,7 +116,6 @@ class StatsRemoteV2Tests: RemoteTestCase, RESTTestable {
         let dec31 = DateComponents(year: 2018, month: 12, day: 31)
         let date = Calendar.autoupdatingCurrent.date(from: dec31)!
 
-
         remote.getData(for: .year, endingOn: date) { (topAuthors: StatsTopAuthorsTimeIntervalData?, error: Error?) in
             XCTAssertNil(error)
             XCTAssertNotNil(topAuthors)
@@ -140,7 +145,6 @@ class StatsRemoteV2Tests: RemoteTestCase, RESTTestable {
 
         let dec31 = DateComponents(year: 2019, month: 12, day: 31)
         let date = Calendar.autoupdatingCurrent.date(from: dec31)!
-
 
         remote.getData(for: .year, endingOn: date) { (videos: StatsTopVideosTimeIntervalData?, error: Error?) in
             XCTAssertNil(error)
@@ -174,7 +178,6 @@ class StatsRemoteV2Tests: RemoteTestCase, RESTTestable {
         let dec31 = DateComponents(year: 2018, month: 12, day: 31)
         let date = Calendar.autoupdatingCurrent.date(from: dec31)!
 
-
         remote.getData(for: .year, endingOn: date) { (countries: StatsTopCountryTimeIntervalData?, error: Error?) in
             XCTAssertNil(error)
             XCTAssertNotNil(countries)
@@ -192,7 +195,6 @@ class StatsRemoteV2Tests: RemoteTestCase, RESTTestable {
             XCTAssertEqual(countries?.countries.last!.name, "Netherlands")
             XCTAssertEqual(countries?.countries.last!.code, "NL")
 
-
             expect.fulfill()
         }
 
@@ -206,7 +208,6 @@ class StatsRemoteV2Tests: RemoteTestCase, RESTTestable {
 
         let dec31 = DateComponents(year: 2018, month: 12, day: 31)
         let date = Calendar.autoupdatingCurrent.date(from: dec31)!
-
 
         remote.getData(for: .year, endingOn: date) { (clicks: StatsTopClicksTimeIntervalData?, error: Error?) in
             XCTAssertNil(error)
@@ -305,10 +306,10 @@ class StatsRemoteV2Tests: RemoteTestCase, RESTTestable {
         let expect = expectation(description: "It should return posts data for a year")
 
         stubRemoteResponse(sitePostsDataEndpoint, filename: getPostsMockFilename, contentType: .ApplicationJSON)
-      
+
         let jan31 = DateComponents(year: 2019, month: 1, day: 31)
         let date = Calendar.autoupdatingCurrent.date(from: jan31)!
-      
+
         remote.getData(for: .month, endingOn: date) { (topPosts: StatsTopPostsTimeIntervalData?, error: Error?) in
             XCTAssertNil(error)
             XCTAssertNotNil(topPosts)
@@ -335,12 +336,12 @@ class StatsRemoteV2Tests: RemoteTestCase, RESTTestable {
             XCTAssertEqual(topPosts?.topPosts[2].title, "Dundee, Scotland")
             XCTAssertEqual(topPosts?.topPosts[2].postID, 2413)
             XCTAssertEqual(topPosts?.topPosts[2].postURL, URL(string: "http://officetoday.wordpress.com/2019/01/24/dundee-scotland-2/"))
-                                                     
+
             expect.fulfill()
         }
 
-        waitForExpectations(timeout: timeout, handler: nil)                                                    
-    }                                                    
+        waitForExpectations(timeout: timeout, handler: nil)
+    }
 
     func testsPublishedPosts() {
         let expect = expectation(description: "It should return published posts for a specified window")
@@ -368,7 +369,7 @@ class StatsRemoteV2Tests: RemoteTestCase, RESTTestable {
 
     func testFetchDownloadsData() {
         let expect = expectation(description: "It should return file download data for a month")
-        
+
         let dateComponents = DateComponents(year: 2019, month: 7, day: 29)
         let date = Calendar.autoupdatingCurrent.date(from: dateComponents)!
 
@@ -382,7 +383,7 @@ class StatsRemoteV2Tests: RemoteTestCase, RESTTestable {
             XCTAssertEqual(fileDownloads?.totalDownloadsCount, 15)
 
             XCTAssertEqual(fileDownloads?.fileDownloads.count, 2)
-            
+
             XCTAssertEqual(fileDownloads?.fileDownloads.first!.file, "/2019/07/test.pdf")
             XCTAssertEqual(fileDownloads?.fileDownloads.first!.downloadCount, 11)
 
@@ -391,7 +392,7 @@ class StatsRemoteV2Tests: RemoteTestCase, RESTTestable {
 
         waitForExpectations(timeout: timeout, handler: nil)
     }
-    
+
   func testVisitsForDay() {
         let expect = expectation(description: "It should return visits data for a day")
 
@@ -430,10 +431,10 @@ class StatsRemoteV2Tests: RemoteTestCase, RESTTestable {
         let expect = expectation(description: "It should return post detail")
 
         stubRemoteResponse(sitePostDetailsEndpoint, filename: getPostsDetailsFilename, contentType: .ApplicationJSON)
-      
+
         let feb21 = DateComponents(year: 2019, month: 2, day: 21)
         let date = Calendar.autoupdatingCurrent.date(from: feb21)!
-      
+
         remote.getDetails(forPostID: 9001) { (postDetails, error) in
             XCTAssertNil(error)
             XCTAssertNotNil(postDetails)
@@ -494,7 +495,7 @@ class StatsRemoteV2Tests: RemoteTestCase, RESTTestable {
             XCTAssertEqual(mostRecentWeek?.days.last?.date, mostRecentWeek?.endDay)
             XCTAssertEqual(mostRecentWeek?.days.first?.viewsCount, 157)
             XCTAssertEqual(mostRecentWeek?.days.last?.viewsCount, 324)
-                                            
+
             expect.fulfill()
         }
 
@@ -547,7 +548,6 @@ class StatsRemoteV2Tests: RemoteTestCase, RESTTestable {
         let feb21 = DateComponents(year: 2019, month: 2, day: 21)
         let date = Calendar.autoupdatingCurrent.date(from: feb21)!
 
-        
         remote.getData(for: .month, endingOn: date) { (summary: StatsSummaryTimeIntervalData?, error: Error?) in
             XCTAssertNil(error)
             XCTAssertNotNil(summary)
@@ -571,7 +571,7 @@ class StatsRemoteV2Tests: RemoteTestCase, RESTTestable {
             let nineMonthsFromMay1 = Calendar.autoupdatingCurrent.date(byAdding: .month, value: 9, to: may1Date)!
 
             XCTAssertEqual(summary?.summaryData[9].periodStartDate, nineMonthsFromMay1)
-            
+
             expect.fulfill()
         }
 
@@ -585,7 +585,6 @@ class StatsRemoteV2Tests: RemoteTestCase, RESTTestable {
 
         let feb21 = DateComponents(year: 2019, month: 2, day: 21)
         let date = Calendar.autoupdatingCurrent.date(from: feb21)!
-
 
         remote.getData(for: .month, endingOn: date) { (summary: StatsLikesSummaryTimeIntervalData?, error: Error?) in
             XCTAssertNil(error)

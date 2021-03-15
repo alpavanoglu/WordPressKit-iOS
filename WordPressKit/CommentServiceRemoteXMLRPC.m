@@ -20,13 +20,18 @@
                             success:(void (^)(NSArray *posts))success
                             failure:(void (^)(NSError *error))failure
 {
-    NSMutableDictionary *extraParameters = [@{
-                                                @"number": @(maximumComments)
-                                            } mutableCopy];
+    NSMutableDictionary *extraParameters = [@{ @"number": @(maximumComments) } mutableCopy];
+
     if (options) {
         [extraParameters addEntriesFromDictionary:options];
     }
+    
+    NSNumber *statusFilter = [extraParameters numberForKey:@"status"];
+    [extraParameters removeObjectForKey:@"status"];
+    extraParameters[@"status"] = [self parameterForCommentStatus:statusFilter];
+
     NSArray *parameters = [self XMLRPCArgumentsWithExtra:extraParameters];
+    
     [self.api callMethod:@"wp.getComments"
               parameters:parameters
                  success:^(id responseObject, NSHTTPURLResponse *httpResponse) {
@@ -39,6 +44,27 @@
                          failure(error);
                      }
                  }];
+}
+
+- (NSString *)parameterForCommentStatus:(NSNumber *)status
+{
+    switch (status.intValue) {
+        case CommentStatusFilterUnapproved:
+            return @"hold";
+            break;
+        case CommentStatusFilterApproved:
+            return @"approve";
+            break;
+        case CommentStatusFilterTrash:
+            return @"trash";
+            break;
+        case CommentStatusFilterSpam:
+            return @"spam";
+            break;
+        default:
+            return @"all";
+            break;
+    }
 }
 
 - (void)getCommentWithID:(NSNumber *)commentID
@@ -188,6 +214,7 @@
     comment.postTitle = xmlrpcDictionary[@"post_title"];
     comment.status = xmlrpcDictionary[@"status"];
     comment.type = xmlrpcDictionary[@"type"];
+
     return comment;
 }
 
