@@ -63,7 +63,7 @@ class WordPressOrgRestApiTests: XCTestCase {
         }
         waitForExpectations(timeout: 2, handler: nil)
     }
-    
+
     func testSuccessfulPostCall() {
         stub(condition: isAPIRequest()) { _ in
             let stubPath = OHPathForFile("wp-reusable-blocks.json", type(of: self))
@@ -73,16 +73,16 @@ class WordPressOrgRestApiTests: XCTestCase {
         let api = WordPressOrgRestApi(apiBase: apiBase)
         let blockContent = "<!-- wp:paragraph --><p>Some text</p><!-- /wp:paragraph --><!-- wp:list --><ul><li>Item 1</li><li>Item 2</li><li>Item 3</li></ul><!-- /wp:list -->"
         let parameters: [String: String] = ["id": "6", "content": blockContent]
-        api.POST("wp/v2/blocks/6", parameters: parameters as [String: AnyObject]) { (result, response) in
+        api.POST("wp/v2/blocks/6", parameters: parameters as [String: AnyObject]) { (result, _) in
             expect.fulfill()
             switch result {
             case .success(let object):
-                guard let block = object as? Dictionary<String, AnyObject> else {
+                guard let block = object as? [String: AnyObject] else {
                     XCTFail("Unexpected API result")
                     return
                 }
                 XCTAssertEqual(block.count, 15, "The API should return the block")
-            case .failure(_):
+            case .failure:
                 XCTFail("This call should not fail")
             }
         }
